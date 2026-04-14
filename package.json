@@ -38,7 +38,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.16.4",
     "@types/sanitize-html": "^2.16.0",
-    "@unocss/eslint-plugin": "^66.3.3",
+    "@unocss/eslint-plugin": "^66.6.8",
     "@unocss/preset-attributify": "^66.3.3",
     "@unocss/reset": "^66.3.3",
     "@unocss/transformer-directives": "^66.3.3",
