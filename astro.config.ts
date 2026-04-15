@@ -41,7 +41,8 @@ export default defineConfig({
     swup({
       theme: false,
       animationClass: 'transition-swup-',
-      cache: true,
+      containers: ['main', '.transition-swup-header'],
+      cache: false,
       preload: true,
       accessibility: true,
       smoothScrolling: true,

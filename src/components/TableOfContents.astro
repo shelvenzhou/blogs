@@ -1,0 +1,134 @@
+---
+import type { MarkdownHeading } from 'astro'
+
+interface Props {
+  headings: MarkdownHeading[]
+}
+
+const { headings } = Astro.props
+const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
+---
+
+{tocHeadings.length > 0 && (
+  <nav class="toc">
+    <a href="/" class="toc-back">&larr; Back to Home</a>
+    <p class="toc-title">Table of Contents</p>
+    <ul class="toc-list">
+      {tocHeadings.map(h => (
+        <li class:list={[`toc-depth-${h.depth}`]} data-heading={h.slug}>
+          <a href={`#${h.slug}`}>{h.text}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<script>
+  const tocItems = document.querySelectorAll('.toc-list li[data-heading]')
+  if (tocItems.length > 0) {
+    const main = document.querySelector('main')
+    if (!main) throw new Error('main not found')
+
+    const slugs = Array.from(tocItems).map(li => (li as HTMLElement).dataset.heading!)
+    const headingEls = slugs.map(s => document.getElementById(s)).filter(Boolean) as HTMLElement[]
+
+    // Scroll highlight: track which heading is current based on main's scroll
+    function updateActive() {
+      const scrollTop = main!.scrollTop
+      let current = 0
+      for (let i = 0; i < headingEls.length; i++) {
+        // offsetTop is relative to the offsetParent; use it directly
+        // since headings are inside main's scroll container
+        if (headingEls[i].offsetTop - main!.offsetTop <= scrollTop + 100) {
+          current = i
+        }
+      }
+      tocItems.forEach((li, i) => {
+        li.classList.toggle('active', i === current)
+      })
+    }
+
+    main.addEventListener('scroll', updateActive, { passive: true })
+    updateActive()
+
+    // Click to scroll: intercept anchor clicks and scroll within main
+    document.querySelectorAll('.toc-list a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault()
+        const href = (link as HTMLAnchorElement).getAttribute('href')
+        if (!href) return
+        const target = document.querySelector(href) as HTMLElement
+        if (!target) return
+        main!.scrollTo({
+          top: target.offsetTop - main!.offsetTop,
+          behavior: 'smooth',
+        })
+      })
+    })
+  }
+</script>
+
+<style>
+  .toc {
+    position: sticky;
+    top: 2rem;
+  }
+
+  .toc-back {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 0.8rem;
+    opacity: 0.5;
+    margin-bottom: 1.25rem;
+    transition: opacity 0.2s;
+  }
+
+  .toc-back:hover {
+    opacity: 1;
+  }
+
+  .toc-title {
+    font-weight: 600;
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px solid rgba(125, 125, 125, 0.15);
+  }
+
+  .toc-list li {
+    line-height: 1.5;
+  }
+
+  .toc-list a {
+    display: block;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.15rem 0 0.15rem 0.75rem;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+  }
+
+  .toc-list a:hover {
+    opacity: 0.85;
+  }
+
+  .toc-list li.active > a {
+    opacity: 1;
+    border-left-color: currentColor;
+  }
+
+  .toc-depth-3 a {
+    padding-left: 1.5rem;
+    font-size: 0.75rem;
+  }
+</style>

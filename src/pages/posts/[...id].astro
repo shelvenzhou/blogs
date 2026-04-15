@@ -3,6 +3,7 @@ import type { GetStaticPaths, InferGetStaticPropsType } from 'astro'
 import Comments from '~/components/Comments.astro'
 import Pagination from '~/components/Pagination.astro'
 import SiteSeo from '~/components/SiteSeo.astro'
+import TableOfContents from '~/components/TableOfContents.astro'
 import LayoutDefault from '~/layouts/LayoutDefault.astro'
 import LayoutPost from '~/layouts/LayoutPost.astro'
 import { getPosts } from '~/utils'
@@ -24,7 +25,7 @@ export const getStaticPaths = (async () => {
 type Props = InferGetStaticPropsType<typeof getStaticPaths>
 
 const { entry, prev, next } = Astro.props
-const { Content } = await render(entry)
+const { Content, headings } = await render(entry)
 const { translate: t } = Astro.locals
 
 function getUrl(id: string) {
@@ -34,6 +35,7 @@ function getUrl(id: string) {
 
 <LayoutDefault>
   <SiteSeo slot="seo" title={entry.data.title} desc={entry.data.description} banner={entry.data.banner} />
+  <TableOfContents slot="sidebar" headings={headings} />
 
   <LayoutPost post={entry}>
     <Content />
