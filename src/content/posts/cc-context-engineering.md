@@ -4,7 +4,7 @@ pubDate: 2026-04-14
 categories:
   - AI Agent
 description: "深入 Claude Code 源码，拆解其三层递进式 context window 管理机制——Snip 拦截冗余输出、MicroCompact 外科手术式清理 tool results、AutoCompact LLM 驱动总结——以及它们如何配合 prompt cache 实现成本与能力的双重优化。"
-draft: true
+draft: false
 ---
 
 目前 Agent 的能力天花板往往不是模型本身，而是 context window 的管理质量。一个百万 token 的窗口看似宽裕，但在真实的 coding agent 场景下——动辄几十次 tool call、成百上千行的文件读取和 shell 输出——填满它只是时间问题。填满之后怎么办？粗暴截断会丢失关键上下文，导致 agent "失忆"；放任不管又会让模型淹没在噪音中，注意力被稀释，决策质量下降。

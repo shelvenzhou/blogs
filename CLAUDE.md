@@ -37,6 +37,8 @@ Astro 博客（Typography 主题），中文技术博客。
 ### 4. 发布
 
 1. 用户确认后 commit 并 push
+2. 如果 Cloudflare Pages 显示 build 成功但线上文章没有更新，先检查文章 frontmatter 是否仍为 `draft: true`
+3. 生产构建会在 `src/utils/index.ts` 里过滤 `draft: true` 的文章，这种情况下 `dist/` 不会生成对应的 `/posts/...` 页面
 
 ## 环境
 
