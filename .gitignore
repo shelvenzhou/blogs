@@ -29,5 +29,8 @@ references/*
 *.swp
 *.swo
 
+# Writing workspace (kanban, outlines, templates)
+.writing/
+
 # Claude Code
 .claude/
