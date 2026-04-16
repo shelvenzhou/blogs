@@ -9,7 +9,7 @@ draft: false
 
 目前 Agent 的能力天花板往往不是模型本身，而是 context window 的管理质量。一个百万 token 的窗口看似宽裕，但在真实的 coding agent 场景下——动辄几十次 tool call、成百上千行的文件读取和 shell 输出——填满它只是时间问题。填满之后怎么办？粗暴截断会丢失关键上下文，导致 agent "失忆"；放任不管又会让模型淹没在噪音中，注意力被稀释，决策质量下降。
 
-Claude Code 对此做了三层递进式压缩：**Snip → MicroCompact → AutoCompact**。这套机制不仅在省 token，降低模型端的服务压力，更直接提升了 agent 的工作能力——更少的噪音意味着更精准的注意力分配。本文基于 Claude Code 源码（附件提供）和开源社区项目，拆解这三层机制的设计与实现。
+Claude Code 对此做了三层递进式压缩：**Snip → MicroCompact → AutoCompact**。这套机制不仅在省 token，降低模型端的服务压力，更直接提升了 agent 的任务完成质量——更少的噪音意味着更精准的注意力分配。本文基于 2026 年 3 月 31 日泄露的 Claude Code 源码（文末可免费下载）和开源社区项目，拆解这三层机制的设计与实现。
 
 ## 全局视角：三层压缩的执行链路
 
@@ -39,7 +39,7 @@ const shouldCompact = await shouldAutoCompact(
 
 Claude Code 内部有一个 `snipCompact` 模块，由 `feature('HISTORY_SNIP')` 控制，其代码并未包含在公开的源码中。但从调用方式可以看出它的定位：**在 MicroCompact 之前执行，返回 `tokensFreed` 供后续阈值判断使用。**
 
-由于原始代码不可用，这里参考 [edouard-claude/snip](https://github.com/edouard-claude/snip) 的实现来分析 snip 的设计思路。该项目是社区基于 Claude Code hook 机制构建的 shell 输出过滤工具。
+由于原始代码不可用，这里参考 [edouard-claude/snip](https://github.com/edouard-claude/snip) 的实现来分析 snip 的设计思路。该项目是社区基于 Claude Code hook 机制构建的独立 shell 输出过滤工具，Claude Code 内部的 snip 逻辑在策略和细节上可能有所不同。
 
 ### 代理与拦截模式
 
@@ -114,7 +114,7 @@ const COMPACTABLE_TOOLS = new Set([
 
 #### Time-based 路径（Cold Cache）
 
-当对话停顿超过一定时间（默认 60 分钟，对应 Anthropic 服务端的 cache TTL），系统判定 prompt cache 已失效。既然下次请求注定要完整重发所有 token，不如趁机"瘦身"：
+当对话停顿超过一定时间（Claude Code 默认阈值为 60 分钟），系统判定 prompt cache 已失效（注：Anthropic API 的标准 cache TTL 为 5 分钟，这里的 60 分钟是 Claude Code 自定义的触发阈值，采用更保守的策略来决定何时执行 time-based 清理）。既然下次请求注定要完整重发所有 token，不如趁机"瘦身"：
 
 ```typescript title="microCompact.ts"
 function maybeTimeBasedMicrocompact(messages, querySource) {
@@ -164,7 +164,7 @@ async function cachedMicrocompactPath(messages, querySource) {
 }
 ```
 
-这实现了一个看似矛盾的目标：**在保持 100% cache 命中率的同时，减少模型实际处理的 token 数量。**
+这实现了一个看似矛盾的目标：**在不破坏已有 cache 的前提下，减少模型实际处理的 token 数量。**
 
 `cache_edits` 支持两类操作：
 - `clear_tool_uses`：屏蔽特定 tool call 的输入或输出
@@ -172,7 +172,7 @@ async function cachedMicrocompactPath(messages, querySource) {
 
 ### cache_edits：Agent 与 Model 的协同优化
 
-值得注意的是，`cache_edits` 不是纯客户端的技巧——它要求模型推理引擎在底层配合，能够在保持 KV cache 完整的前提下，根据客户端指令在推理时跳过特定内容。这是一个 **agent 端和 model 端协同优化**的典型案例，也是 Anthropic 作为同时掌控模型和 agent 产品的厂商的核心竞争力之一。
+值得注意的是，`cache_edits` 不是纯客户端的技巧——它要求模型推理引擎在底层配合，能够在保持 KV cache 完整的前提下，根据客户端指令在推理时跳过特定内容。这是一个 **agent 端和 model 端协同优化**的典型案例，也是 Anthropic 作为同时掌控模型和 agent 产品的厂商的核心竞争力之一。目前 `cache_edits` 是 Claude Code 内部使用的能力，尚未作为公开 API 提供。
 
 横向对比来看，各家在缓存管理上的深度差异很大：
 
@@ -284,20 +284,12 @@ export function truncateHeadForPTLRetry(messages, ptlResponse) {
 
 ## 总结
 
-Claude Code 的 context window 管理不是单一策略，而是一套分层递进的系统：
+对于 agent 开发者来说，这篇文章的核心 takeaway 不只是"怎么压缩 context"，而是 **context 管理本身就是 agent 能力的一部分**。具体来说：
 
-| 层级 | 机制 | 触发时机 | 成本 | 特点 |
-|:-----|:-----|:---------|:-----|:-----|
-| Layer 1 | Snip | Shell 命令执行时 | 零 | 源头拦截，压缩率最高 |
-| Layer 2 | MicroCompact | 每次 API 请求前 | 零 | cache-aware 双轨，精准清理 |
-| Layer 3 | AutoCompact | token 接近上限时 | 1 次 LLM 调用 | 最后防线，结构化总结 |
-
-这套设计背后有两个核心原则：
-1. **能不调 LLM 就不调 LLM**——前两层纯本地操作覆盖了绝大多数场景
-2. **Cache-aware**——MicroCompact 的双轨设计围绕 prompt cache 的冷热状态展开，在压缩 token 的同时最大化 cache 命中率
-
-对于 agent 开发者来说，这里的启示不只是"怎么压缩 context"，更是"context 管理本身就是 agent 能力的一部分"。精心管理的 context window 意味着更少的噪音、更精准的注意力分配，直接转化为更好的任务完成质量。
+1. **分层设计优于单一策略**——零成本的本地操作（Snip、MicroCompact）覆盖绝大多数场景，LLM 总结只是最后防线。不是每次都需要动用最重的工具
+2. **Cache-aware 是关键约束**——在有 prompt cache 的系统中，"压缩 context"和"保持 cache 命中"是一对张力。MicroCompact 的双轨设计展示了如何在这个约束下做工程权衡
+3. **精心管理的 context = 更好的任务完成质量**——更少的噪音意味着更精准的注意力分配，这直接影响 agent 的决策质量，而不仅仅是省钱
 
 本文所引用的 Claude Code 源码包含在下方附件中，欢迎自行探索更多细节。
 
-**附件**：[claude-code-main.zip](/downloads/claude-code-main.zip) — Claude Code 源码（用于本文分析）
+**附件**：[claude-code-main.zip](/downloads/claude-code-main.zip) — 2026 年 3 月 31 日泄露的 Claude Code 源码（用于本文分析）
