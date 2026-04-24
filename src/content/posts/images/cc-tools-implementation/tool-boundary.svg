@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="560" viewBox="0 0 1120 560" role="img" aria-labelledby="title desc">
+  <title id="title">Claude Code Tool execution boundary</title>
+  <desc id="desc">A diagram showing a model tool use passing through validation, orchestration, execution, and context budget management before returning a tool result.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569" />
+    </marker>
+    <filter id="shadow" x="-8%" y="-12%" width="116%" height="124%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <rect width="1120" height="560" fill="#f8fafc" />
+
+  <text x="560" y="46" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700" fill="#0f172a">Tool 是 Agent 与真实世界之间的执行边界</text>
+  <text x="560" y="78" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="15" fill="#475569">模型只发起 tool use；校验、权限、调度、执行和上下文预算由本地 runtime 接管</text>
+
+  <rect x="56" y="206" width="150" height="94" rx="8" fill="#ffffff" stroke="#cbd5e1" filter="url(#shadow)" />
+  <text x="131" y="244" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Model</text>
+  <text x="131" y="272" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#64748b">tool_use block</text>
+
+  <rect x="278" y="124" width="560" height="300" rx="10" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="558" y="158" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">Tool Runtime Boundary</text>
+
+  <rect x="312" y="192" width="146" height="154" rx="8" fill="#ecfeff" stroke="#0891b2" />
+  <text x="385" y="224" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#155e75">校验</text>
+  <text x="332" y="258" font-family="Inter, Arial, sans-serif" font-size="14" fill="#164e63">inputSchema</text>
+  <text x="332" y="286" font-family="Inter, Arial, sans-serif" font-size="14" fill="#164e63">validateInput</text>
+  <text x="332" y="314" font-family="Inter, Arial, sans-serif" font-size="14" fill="#164e63">checkPermissions</text>
+
+  <rect x="486" y="192" width="146" height="154" rx="8" fill="#f0fdf4" stroke="#16a34a" />
+  <text x="559" y="224" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#166534">执行编排</text>
+  <text x="506" y="258" font-family="Inter, Arial, sans-serif" font-size="14" fill="#14532d">isReadOnly</text>
+  <text x="506" y="286" font-family="Inter, Arial, sans-serif" font-size="14" fill="#14532d">isConcurrencySafe</text>
+  <text x="506" y="314" font-family="Inter, Arial, sans-serif" font-size="14" fill="#14532d">onProgress</text>
+
+  <rect x="660" y="192" width="146" height="154" rx="8" fill="#fff7ed" stroke="#ea580c" />
+  <text x="733" y="224" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#9a3412">上下文工程</text>
+  <text x="680" y="258" font-family="Inter, Arial, sans-serif" font-size="14" fill="#7c2d12">prompt</text>
+  <text x="680" y="286" font-family="Inter, Arial, sans-serif" font-size="14" fill="#7c2d12">inputJSONSchema</text>
+  <text x="680" y="314" font-family="Inter, Arial, sans-serif" font-size="14" fill="#7c2d12">maxResultSize</text>
+
+  <rect x="914" y="206" width="150" height="94" rx="8" fill="#ffffff" stroke="#cbd5e1" filter="url(#shadow)" />
+  <text x="989" y="244" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">OS / Files</text>
+  <text x="989" y="272" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#64748b">shell, fs, network</text>
+
+  <path d="M206 253 H278" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M458 269 H486" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M632 269 H660" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M838 253 H914" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+
+  <path d="M914 310 C760 488 354 488 206 310" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow)" />
+  <text x="560" y="486" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="15" fill="#475569">tool_result 返回模型：结构化结果、preview、持久化路径或错误信息</text>
+
+  <text x="558" y="386" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#64748b">call(input, context, canUseTool, parentMessage, onProgress)</text>
+</svg>
