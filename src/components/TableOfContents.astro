@@ -51,19 +51,44 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
     main.addEventListener('scroll', updateActive, { passive: true })
     updateActive()
 
+    function getHeadingFromHash(hash: string) {
+      if (!hash.startsWith('#')) return null
+      try {
+        return document.getElementById(decodeURIComponent(hash.slice(1)))
+      }
+      catch {
+        return document.getElementById(hash.slice(1))
+      }
+    }
+
+    function scrollToHeading(target: HTMLElement, behavior: ScrollBehavior = 'smooth') {
+      main!.scrollTo({
+        top: target.offsetTop - main!.offsetTop,
+        behavior,
+      })
+    }
+
     // Click to scroll: intercept anchor clicks and scroll within main
     document.querySelectorAll('.toc-list a').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault()
         const href = (link as HTMLAnchorElement).getAttribute('href')
         if (!href) return
-        const target = document.querySelector(href) as HTMLElement
+        const target = getHeadingFromHash(href)
         if (!target) return
-        main!.scrollTo({
-          top: target.offsetTop - main!.offsetTop,
-          behavior: 'smooth',
-        })
+        scrollToHeading(target)
+        history.pushState(null, '', href)
       })
+    })
+
+    const initialTarget = getHeadingFromHash(window.location.hash)
+    if (initialTarget) {
+      requestAnimationFrame(() => scrollToHeading(initialTarget, 'auto'))
+    }
+
+    window.addEventListener('hashchange', () => {
+      const target = getHeadingFromHash(window.location.hash)
+      if (target) scrollToHeading(target)
     })
   }
 </script>
