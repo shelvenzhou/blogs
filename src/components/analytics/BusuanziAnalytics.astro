@@ -1,0 +1,38 @@
+<!-- Site/page visitor counter powered by Busuanzi. -->
+<script is:inline async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script is:inline>
+  ;(() => {
+    const refresh = () => {
+      const caller = window.bszCaller
+      if (caller && typeof caller.fetchs === 'function') {
+        caller.fetchs()
+      }
+    }
+
+    const scheduleRefresh = () => window.setTimeout(refresh, 100)
+
+    document.addEventListener('swup:contentReplaced', scheduleRefresh)
+    document.addEventListener('swup:page:view', scheduleRefresh)
+
+    const observer = new MutationObserver((records) => {
+      const hasCounterNode = records.some((record) =>
+        Array.from(record.addedNodes).some((node) => {
+          if (!(node instanceof HTMLElement)) {
+            return false
+          }
+
+          return node.id?.startsWith('busuanzi_') || Boolean(node.querySelector('[id^="busuanzi_"]'))
+        }),
+      )
+
+      if (hasCounterNode) {
+        scheduleRefresh()
+      }
+    })
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    })
+  })()
+</script>

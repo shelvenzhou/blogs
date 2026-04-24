@@ -20,4 +20,7 @@ export const userConfig: Partial<UserConfig> = {
       },
     ],
   },
+  analytics: {
+    busuanzi: true,
+  },
 }

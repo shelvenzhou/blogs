@@ -1,13 +1,16 @@
 ---
+import { themeConfig } from '~/.config'
 import type { Post } from '~/types'
 import { formatDate } from '~/utils'
 import PostCategory from './PostCategory.astro'
+import VisitStats from './VisitStats.astro'
 
 interface Props {
   post: Post
+  showPageViews?: boolean
 }
 
-const { post } = Astro.props
+const { post, showPageViews = false } = Astro.props
 const { translate: t } = Astro.locals
 
 const categoryList = post.data.categories ?? []
@@ -21,5 +24,6 @@ const categoryList = post.data.categories ?? []
     <span>{t(post.data.modDate ? 'updated_at' : 'posted_at')}</span>
     <time>{formatDate(post.data.modDate ?? post.data.pubDate)}</time>
     {categoryList.map((category) => <PostCategory category={category} />)}
+    {themeConfig.analytics.busuanzi && showPageViews && <VisitStats variant="page" />}
   </div>
 </header>

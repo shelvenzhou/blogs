@@ -1,5 +1,6 @@
 ---
 import GoogleAnalytics from '~/components/analytics/GoogleAnalytics.astro'
+import BusuanziAnalytics from '~/components/analytics/BusuanziAnalytics.astro'
 import UmamiAnalytics from '~/components/analytics/UmamiAnalytics.astro'
 import { themeConfig } from '~/.config'
 
@@ -12,3 +13,4 @@ const umamiAnalyticsId = themeConfig.analytics.umamiAnalyticsId || PUBLIC_UMAMI_
 
 {googleAnalyticsId && <GoogleAnalytics id={googleAnalyticsId} />}
 {umamiAnalyticsId && <UmamiAnalytics id={umamiAnalyticsId} />}
+{themeConfig.analytics.busuanzi && <BusuanziAnalytics />}

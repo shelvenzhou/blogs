@@ -1,5 +1,6 @@
 ---
 import { themeConfig } from '~/.config'
+import VisitStats from './VisitStats.astro'
 
 const year = new Date().getFullYear()
 
@@ -14,6 +15,7 @@ function parseFooter(str: string) {
 ---
 
 {footer.length && footer.map((str) => <p set:html={parseFooter(str)} />)}
+{themeConfig.analytics.busuanzi && <VisitStats variant="site" />}
 
 <style>
   p {

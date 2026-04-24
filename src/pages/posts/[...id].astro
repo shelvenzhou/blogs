@@ -37,7 +37,7 @@ function getUrl(id: string) {
   <SiteSeo slot="seo" title={entry.data.title} desc={entry.data.description} banner={entry.data.banner} />
   <TableOfContents slot="sidebar" headings={headings} />
 
-  <LayoutPost post={entry}>
+  <LayoutPost post={entry} showPageViews>
     <Content />
   </LayoutPost>
 

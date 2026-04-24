@@ -69,6 +69,7 @@ export interface ConfigAnalytics {
   /** google analytics */
   googleAnalyticsId: string
   umamiAnalyticsId: string
+  busuanzi: boolean
 }
 
 export interface ConfigLaTeX {
