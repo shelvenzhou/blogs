@@ -9,9 +9,16 @@ import UnoCSS from 'unocss/astro'
 import devtoolsJson from 'vite-plugin-devtools-json'
 import { themeConfig } from './src/.config'
 
+const site = new URL(
+  process.env.SITE_URL
+  ?? process.env.PUBLIC_SITE_URL
+  ?? process.env.CF_PAGES_URL
+  ?? themeConfig.site.website,
+).toString()
+
 // https://astro.build/config
 export default defineConfig({
-  site: themeConfig.site.website,
+  site,
   prefetch: true,
   base: '/',
   vite: {

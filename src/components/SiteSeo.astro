@@ -16,7 +16,7 @@ const configSite = themeConfig.site
 
 const title = props.title ?? configSite.title
 const desc = props.desc ?? configSite.description
-const canonical = configSite.website
+const canonical = new URL(Astro.url.pathname, Astro.site ?? configSite.website).toString()
 const twitter = configSEO.twitter
 const rss = new URL('/atom.xml', Astro.site).toString()
 const optimizedImage = await getOptimizedImageURL()
@@ -37,11 +37,15 @@ const seoMeta = [
   { name: 'generator', content: Astro.generator },
   { name: 'twitter:image:src', content: optimizedImage },
   { name: 'twitter:image:alt', content: desc },
-  { name: 'twitter:creator', content: twitter },
-  { name: 'twitter:site', content: twitter },
   { name: 'twitter:card', content: 'summary_large_image' },
   { name: 'twitter:title', content: title },
   { name: 'twitter:description', content: desc },
+  ...(twitter
+    ? [
+        { name: 'twitter:creator', content: twitter },
+        { name: 'twitter:site', content: twitter },
+      ]
+    : []),
   ...configSEO.meta,
 ]
 
@@ -64,6 +68,7 @@ async function getOptimizedImageURL() {
   charset="utf-8"
   title={title}
   description={desc}
+  canonical={canonical}
   extend={{ link: seoLinks, meta: seoMeta }}
   openGraph={openGraph}
 />
